@@ -33,8 +33,12 @@
     <label key="kitchen-duty-plugin.admin.planning.page.web.item.name"/>  
     <link linkId="admin_kitchen_duty_planning_webitem_link">/secure/KitchenDutyPlanningWebworkAction.jspa</link> 
   </web-item>  
-<!--  <rest name="Kitchen Duty Resources" i18n-name-key="kitchen-duty-plugin.rest.resources.name" key="kitchen-duty-resources" path="/kitchenduty" version="1.0"> -->
-<!--    <description key="kitchen-duty-plugin.rest.resources.description">All Kitchen Duty REST Resources</description>  -->
-<!--    <package>io.codeclou.kitchen.duty.rest</package> -->
-<!--  </rest>-->
+  <!--  <rest name="Kitchen Duty Resources" i18n-name-key="kitchen-duty-plugin.rest.resources.name" key="kitchen-duty-resources" path="/kitchenduty" version="1.0"> -->  
+  <!--    <description key="kitchen-duty-plugin.rest.resources.description">All Kitchen Duty REST Resources</description>  -->  
+  <!--    <package>io.codeclou.kitchen.duty.rest</package> -->  
+  <!--  </rest>-->  
+  <rest name="Kitchen Duty Resources 2" i18n-name-key="kitchen-duty-plugin.rest.resources-2.name" key="kitchen-duty-resources-2" path="/kitchenduty" version="1.0"> 
+    <description key="kitchen-duty-plugin.rest.resources-2.description">All Kitchen Duty REST Resources</description>  
+    <package>io.codeclou.kitchen.duty.rest</package> 
+  </rest>
 </atlassian-plugin>
