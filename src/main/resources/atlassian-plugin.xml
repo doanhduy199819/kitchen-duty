@@ -32,13 +32,23 @@
   <web-item key="admin_kitchen_duty_planning_webitem" name="admin_kitchen_duty_planning_webitem" section="admin_plugins_menu/admin_kitchen_duty_planning_section" weight="15" i18n-name-key="kitchen-duty-plugin.admin.planning.page.web.item.name"> 
     <label key="kitchen-duty-plugin.admin.planning.page.web.item.name"/>  
     <link linkId="admin_kitchen_duty_planning_webitem_link">/secure/KitchenDutyPlanningWebworkAction.jspa</link> 
-  </web-item>  
-  <!--  <rest name="Kitchen Duty Resources" i18n-name-key="kitchen-duty-plugin.rest.resources.name" key="kitchen-duty-resources" path="/kitchenduty" version="1.0"> -->  
-  <!--    <description key="kitchen-duty-plugin.rest.resources.description">All Kitchen Duty REST Resources</description>  -->  
-  <!--    <package>io.codeclou.kitchen.duty.rest</package> -->  
-  <!--  </rest>-->  
+  </web-item>
   <rest name="Kitchen Duty Resources 2" i18n-name-key="kitchen-duty-plugin.rest.resources-2.name" key="kitchen-duty-resources-2" path="/kitchenduty" version="1.0"> 
     <description key="kitchen-duty-plugin.rest.resources-2.description">All Kitchen Duty REST Resources</description>  
     <package>io.codeclou.kitchen.duty.rest</package> 
   </rest>
+  <web-resource key="kitchen-duty-plugin-resources--planning-page" name="kitchen-duty-plugin Web Resources for Planning Page">
+    <dependency>com.atlassian.auiplugin:ajs</dependency>
+    <dependency>com.atlassian.auiplugin:aui-select2</dependency>
+    <dependency>com.atlassian.auiplugin:aui-experimental-soy-templates</dependency>
+    <transformation extension="soy">
+      <transformer key="soyTransformer">
+        <functions>com.atlassian.confluence.plugins.soy:soy-core-functions</functions>
+      </transformer>
+    </transformation>
+    <resource type="download" name="kitchen-duty-planning-soy.js"
+      location="templates-soy/kitchen-duty-planning.soy"/>
+    <resource type="download" name="kitchen-duty-plugin--planning-page-controller.js" location="/js/kitchen-duty-plugin--planning-page-controller.js"/>
+    <context>kitchen-duty-plugin</context>
+  </web-resource>
 </atlassian-plugin>

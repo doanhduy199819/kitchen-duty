@@ -1,11 +1,11 @@
 <html>
 <head>
-    <title>Planning Page - Kitchen Duty Plugin</title>
+    <title>$i18n.getText("kitchen-duty-plugin.admin.planning.page.title")</title>
     <meta name="decorator" content="atl.admin">
 </head>
 <body>
-<h1>Kitchen Duty Plugin - Planning Page</h1>
+<h1>$i18n.getText("kitchen-duty-plugin.admin.planning.page.headline")</h1>
 
-<p>Now it looks nice :)</p>
+<div id="kdp-planning-page-container"></div>
 </body>
 </html>
