@@ -1,6 +1,9 @@
 package io.codeclou.kitchen.duty.ao;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
+import com.atlassian.sal.api.transaction.TransactionCallback;
+import java.util.ArrayList;
+import java.util.List;
 import net.java.ao.Query;
 
 public class KitchenDutyActiveObjectHelper {
@@ -35,5 +38,40 @@ public class KitchenDutyActiveObjectHelper {
       return relationships;
     }
     return null;
+  }
+
+  //
+  // TRANSACTIONAL
+  //
+
+  public static Week getWeekByWeekNumberInTransaction(final ActiveObjects activeObjects, final Long weekNumber) {
+    return activeObjects.executeInTransaction(new TransactionCallback<Week>() {
+      @Override
+      public Week doInTransaction() {
+        Week[] weeks = activeObjects.find(Week.class, Query.select().where("WEEK = ?", weekNumber));
+        if (weeks != null && weeks.length > 0) {
+          return weeks[0];
+        }
+        return null;
+      }
+    });
+  }
+
+  public static List<User> getUsersAssignedToWeekInTransaction(final ActiveObjects activeObjects, final Week week) {
+    List<User> users = new ArrayList<>();
+    if (week != null) {
+      UserToWeek[] relationships = activeObjects.executeInTransaction(new TransactionCallback<UserToWeek[]>() {
+        @Override
+        public UserToWeek[] doInTransaction() {
+          return KitchenDutyActiveObjectHelper.findAllRelationships(activeObjects, week);
+        }
+      });
+      if (relationships != null) {
+        for (UserToWeek userToWeek : relationships) {
+          users.add(userToWeek.getUser());
+        }
+      }
+    }
+    return users;
   }
 }

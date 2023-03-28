@@ -46,6 +46,15 @@
       /secure/KitchenDutyPlanningWebworkAction.jspa
     </link>
   </web-item>
+  <web-item key="admin_kitchen_duty_overview_webitem"
+    name="admin_kitchen_duty_overview_webitem"
+    section="admin_plugins_menu/admin_kitchen_duty_planning_section"
+    weight="14" i18n-name-key="kitchen-duty-plugin.admin.overview.page.web.item.name">
+    <label key="kitchen-duty-plugin.admin.overview.page.web.item.name"/>
+    <link linkId="admin_kitchen_duty_overview_webitem_link">
+      /secure/KitchenDutyOverviewPageWebworkAction.jspa
+    </link>
+  </web-item>
   <rest name="Kitchen Duty Resources 2" i18n-name-key="kitchen-duty-plugin.rest.resources-2.name"
     key="kitchen-duty-resources-2" path="/kitchenduty" version="1.0">
     <description key="kitchen-duty-plugin.rest.resources-2.description">All Kitchen Duty REST
@@ -72,10 +81,62 @@
       location="/js/kitchen-duty-plugin--planning-page-controller.js"/>
     <context>kitchen-duty-plugin</context>
   </web-resource>
+
   <ao key="ao-module">
     <description>The module configuring the Active Objects service used by this plugin</description>
     <entity>io.codeclou.kitchen.duty.ao.Week</entity>
     <entity>io.codeclou.kitchen.duty.ao.User</entity>
     <entity>io.codeclou.kitchen.duty.ao.UserToWeek</entity>
   </ao>
+
+  <!-- ====================== -->
+  <!-- OVERVIEW PAGE -->
+  <!-- ====================== -->
+  <web-resource key="kitchen-duty-plugin-resources--overview-page"
+    name="kitchen-duty-plugin Web Resources for Overview Page">
+    <dependency>com.atlassian.auiplugin:ajs</dependency>
+    <dependency>com.atlassian.auiplugin:aui-experimental-soy-templates</dependency>
+    <transformation extension="soy">
+      <transformer key="soyTransformer">
+        <functions>com.atlassian.confluence.plugins.soy:soy-core-functions</functions>
+      </transformer>
+    </transformation>
+    <resource type="download" name="momentjs.js"
+      location="/js/3rdparty/moment.min.js"/>
+    <resource type="download" name="fullcalendar.js"
+      location="/js/3rdparty/fullcalendar.js"/>
+    <resource type="download" name="fullcalendar.css"
+      location="/css/3rdparty/fullcalendar.css"/>
+    <resource type="download" name="kitchen-duty-overview-soy.js"
+      location="templates-soy/kitchen-duty-overview.soy"/>
+    <resource type="download" name="kitchen-duty-plugin--overview-page-controller.js"
+      location="/js/kitchen-duty-plugin--overview-page-controller.js"/>
+    <context>kitchen-duty-plugin</context>
+  </web-resource>
+  <webwork1 key="kitchen-duty-overview-page-webwork-module"
+    name="Kitchen Duty Overview Page Webwork Module"
+    i18n-name-key="kitchen-duty-overview-page-webwork-module.name"
+    roles-required="use">
+    <description
+      key="kitchen-duty-overview-page-webwork-module.description"
+    >The Kitchen Duty Overview Page Webwork Module Plugin</description>
+    <actions>
+      <action name="io.codeclou.kitchen.duty.webwork.KitchenDutyOverviewPageWebworkAction"
+        alias="KitchenDutyOverviewPageWebworkAction">
+        <view
+          name="kitchen-duty-overview-page-success"
+        >/templates/kitchen-duty-overview-page-webwork-module/kitchen-duty-overview-page-success.vm</view>
+      </action>
+    </actions>
+  </webwork1>
+  <web-item key="user_kitchen_duty_overview_webitem"
+    name="user_kitchen_duty_overview_webitem"
+    section="system.top.navigation.bar"
+    weight="60"
+    i18n-name-key="kitchen-duty-plugin.user.overview.page.web.item.name">
+    <label key="kitchen-duty-plugin.user.overview.page.web.item.name"/>
+    <link
+      linkId="user_kitchen_duty_overview_webitem_link"
+    >/secure/KitchenDutyOverviewPageWebworkAction.jspa</link>
+  </web-item>
 </atlassian-plugin>

@@ -1,19 +1,18 @@
 package io.codeclou.kitchen.duty.rest;
 
 import com.atlassian.activeobjects.external.ActiveObjects;
-import com.atlassian.jira.bc.user.search.UserSearchService;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 import com.atlassian.sal.api.transaction.TransactionCallback;
+import com.atlassian.sal.api.user.UserManager;
 import io.codeclou.kitchen.duty.ao.KitchenDutyActiveObjectHelper;
 import io.codeclou.kitchen.duty.ao.User;
 import io.codeclou.kitchen.duty.ao.UserToWeek;
 import io.codeclou.kitchen.duty.ao.Week;
 
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.print.attribute.standard.Media;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -32,15 +31,24 @@ import net.sf.hibernate.id.IncrementGenerator;
 
 @Named
 @Path("/planning")
-public class KitchenDutyPlanningResource {
+public class KitchenDutyPlanningResource extends BaseResource {
 
   @ComponentImport
   private ActiveObjects activeObjects;
 
+  @ComponentImport
+  private UserManager userManager;
+
   @Inject
-  public KitchenDutyPlanningResource(ActiveObjects activeObjects) {
+  public KitchenDutyPlanningResource(ActiveObjects activeObjects, UserManager userManager) {
     this.activeObjects = activeObjects;
+    this.userManager = userManager;
   }
+
+//  @Inject
+//  public KitchenDutyPlanningResource(ActiveObjects activeObjects) {
+//    this.activeObjects = activeObjects;
+//  }
 
   public KitchenDutyPlanningResource() {
   }
@@ -54,16 +62,13 @@ public class KitchenDutyPlanningResource {
     activeObjects.executeInTransaction(new TransactionCallback<Week>() {
       @Override
       public Week doInTransaction() {
-        final Week testWeek = activeObjects.create(Week.class, new DBParam("WEEK", 42));
+        final Week testWeek = activeObjects.create(Week.class, new DBParam("WEEK", 1));
         testWeek.save();
 
-        final User user = activeObjects.create(
-            User.class,
-            new DBParam("NAME", "ichiban"));
+        final User user = activeObjects.create(User.class, new DBParam("NAME", "Duy"));
         user.save();
 
-        final UserToWeek relationship =
-            activeObjects.create(UserToWeek.class);
+        final UserToWeek relationship = activeObjects.create(UserToWeek.class);
         relationship.setUser(user);
         relationship.setWeek(testWeek);
         relationship.save();
@@ -94,7 +99,7 @@ public class KitchenDutyPlanningResource {
   @Produces({MediaType.APPLICATION_JSON})
   @AnonymousAllowed
   public Response getUsersForWeek(@PathParam("weekNumber") final Integer weekNumber) {
-    final Week week = activeObjects.executeInTransaction(new TransactionCallback<Week>() {
+    Week week = activeObjects.executeInTransaction(new TransactionCallback<Week>() {
       @Override
       public Week doInTransaction() {
         Week[] weeks = activeObjects.find(Week.class, Query.select().where("WEEK = ?", weekNumber));
@@ -162,21 +167,23 @@ public class KitchenDutyPlanningResource {
   @AnonymousAllowed
   public Response addUserToWeek(@PathParam("weekNumber") final Integer weekNumber,
       final List<KitchenDutyPlanningResourceUserModel> userParams) {
+    // AUTHENTICATION
+    if (!this.isUserLoggedIn()) {
+      return getUnauthorizedErrorResponse();
+    }
+    // AUTHORIZATION
+    if (this.isUserNotAdmin()) {
+      return getForbiddenErrorResponse();
+    }
     activeObjects.executeInTransaction(new TransactionCallback<Void>() {
       @Override
       public Void doInTransaction() {
         //
         // WEEK
         //
-        Week week = KitchenDutyActiveObjectHelper.findUniqueWeek(
-            activeObjects,
-            weekNumber
-        );
+        Week week = KitchenDutyActiveObjectHelper.findUniqueWeek(activeObjects, weekNumber);
         if (week == null) {
-          week = activeObjects.create(
-              Week.class,
-              new DBParam("WEEK", weekNumber)
-          );
+          week = activeObjects.create(Week.class, new DBParam("WEEK", weekNumber));
           week.save();
           activeObjects.flush(week);
         }
@@ -195,8 +202,9 @@ public class KitchenDutyPlanningResource {
         //
         // USER
         //
-        for (KitchenDutyPlanningResourceUserModel userParam: userParams) {
-          User user = KitchenDutyActiveObjectHelper.findUniqueUser(activeObjects, userParam.getUsername());
+        for (KitchenDutyPlanningResourceUserModel userParam : userParams) {
+          User user = KitchenDutyActiveObjectHelper.findUniqueUser(activeObjects,
+              userParam.getUsername());
           if (user == null) {
             user = activeObjects.create(User.class, new DBParam("NAME", userParam.getUsername()));
             user.save();
@@ -205,7 +213,8 @@ public class KitchenDutyPlanningResource {
           //
           // Establish ManyToMany Relationship
           //
-          UserToWeek relationship = KitchenDutyActiveObjectHelper.findRelationship(activeObjects, user, week);
+          UserToWeek relationship = KitchenDutyActiveObjectHelper.findRelationship(activeObjects,
+              user, week);
           if (relationship == null) {
             relationship = activeObjects.create(UserToWeek.class);
             relationship.setUser(user);
@@ -239,10 +248,7 @@ public class KitchenDutyPlanningResource {
         //
         // WEEK
         //
-        Week week = KitchenDutyActiveObjectHelper.findUniqueWeek(
-            activeObjects,
-            weekNumber
-        );
+        Week week = KitchenDutyActiveObjectHelper.findUniqueWeek(activeObjects, weekNumber);
         if (week == null) {
           // week does not exist => no relation to delete
           return null;
@@ -251,10 +257,8 @@ public class KitchenDutyPlanningResource {
         //
         // USER
         //
-        User user = KitchenDutyActiveObjectHelper.findUniqueUser(
-            activeObjects,
-            userParam.getUsername()
-        );
+        User user = KitchenDutyActiveObjectHelper.findUniqueUser(activeObjects,
+            userParam.getUsername());
         if (user == null) {
           // user does not exist => no relation to delete
           return null;
@@ -263,8 +267,8 @@ public class KitchenDutyPlanningResource {
         //
         // Delete ManyToMany Relationship
         //
-        UserToWeek relationship = KitchenDutyActiveObjectHelper
-            .findRelationship(activeObjects, user, week);
+        UserToWeek relationship = KitchenDutyActiveObjectHelper.findRelationship(activeObjects,
+            user, week);
         if (relationship != null) {
           activeObjects.delete(relationship);
         }
@@ -272,6 +276,39 @@ public class KitchenDutyPlanningResource {
         return null;
       }
     });
-    return Response.ok().build();
+    return null;
+  }
+
+  @GET
+  @Path("/year/{year}/month/{month}")
+  @Produces({MediaType.APPLICATION_JSON})
+  @AnonymousAllowed
+  public Response getUsersForWeek(@PathParam("year") final Long year,
+      @PathParam("month") final Long month) {
+    // AUTHENTICATION
+    if (!this.isUserLoggedIn()) {
+      return getUnauthorizedErrorResponse();
+    }
+    // BUSINESS LOGIC
+    List<KitchenDutyOverviewPageMonthDutyModel> responseList = new ArrayList<>();
+    List<Long> weekNumbersInMonth = getWeeksOfMonth(year, month);
+    for (Long weekNumber : weekNumbersInMonth) {
+      Week week = KitchenDutyActiveObjectHelper
+          .getWeekByWeekNumberInTransaction(activeObjects, weekNumber);
+      List<User> usersForWeek = KitchenDutyActiveObjectHelper
+          .getUsersAssignedToWeekInTransaction(activeObjects, week);
+      List<String> usernames = usersForWeek
+          .stream()
+          .map(user -> user.getName())
+          .collect(Collectors.toList());
+      responseList.add(new KitchenDutyOverviewPageMonthDutyModel(
+          weekNumber,
+          getFirstDayOfWeekOfYear(year, weekNumber).toString(),
+          getLastDayOfWeekOfYear(year, weekNumber).toString(),
+          usernames)
+      );
+    }
+
+    return Response.ok(responseList).build();
   }
 }

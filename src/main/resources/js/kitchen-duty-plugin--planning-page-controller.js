@@ -1,23 +1,4 @@
-var showSuccessFlag = function(message) {
-  require(['aui/flag'], function(flag) {
-    flag({
-      type: 'success',
-      title: 'Kitchen Duty Plugin',
-      close: 'auto',
-      body: message
-    });
-  });
-};
-var showErrorFlag = function(message) {
-  require(['aui/flag'], function(flag) {
-    flag({
-      type: 'error',
-      title: 'Kitchen Duty Plugin',
-      close: 'auto',
-      body: message
-    });
-  });
-};
+
 
 var initUserSearch = function(weekNumber) {
   // Init SOY template
@@ -45,9 +26,12 @@ var initUserSearch = function(weekNumber) {
   if (weekNumber !== null) {
     AJS.$.ajax({
       url: window.KDPrestUrl + '/planning/week/' + weekNumber + '/users',
+      type: 'GET',
       dataType: 'json',
       success: function(users) {
         var selectedUserList = [];
+        console.log('users: ', users);
+        console.log('url: ', window.KDPrestUrl + '/planning/week/' + weekNumber + '/users');
         if (users !== null) {
           users.forEach(function(user) {
             selectedUserList.push({ id: user.username, text: user.username });
